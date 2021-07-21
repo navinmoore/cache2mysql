@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cast"
 )
 
@@ -71,7 +72,6 @@ func DecrGoodsStock(ID uint, Num int) (int64, error) {
 	key := fmt.Sprintf(GoodsKey, ID)
 	ctx := context.Background()
 	preStock, _ := rdb.HGet(ctx, key, "stock").Result()
-	// fmt.Println("#######", preStock)
 	if cast.ToInt(preStock) >= Num {
 		stock, err := rdb.HIncrBy(ctx, key, "stock", numInt64).Result()
 		return stock, err
@@ -80,3 +80,56 @@ func DecrGoodsStock(ID uint, Num int) (int64, error) {
 	}
 
 }
+
+func CreateDecrScript() *redis.Script {
+	script := redis.NewScript(`
+		local num = ARGV[1]
+		local Fnum = 0 - num
+		local stock = redis.call("hget", KEYS[1], "stock")
+		if stock < num  then
+			return 0
+		end
+		
+		redis.call("hincrby", KEYS[1], "stock", Fnum)
+		return 1
+	`)
+	return script
+}
+
+func EvalDecrScript(goodskey string, num int) {
+	rdb := RDBInstance()
+	script := CreateDecrScript()
+	sha, err := script.Load(rdb.Context(), rdb).Result()
+	if err != nil {
+		fmt.Println("data.EvalDecrScript err=", err)
+	}
+	keys := make([]string, 1)
+	keys[0] = goodskey
+	ret := rdb.EvalSha(rdb.Context(), sha, keys, num)
+	if result, err := ret.Result(); err != nil {
+		fmt.Printf("Execute Redis fail: %v", err.Error())
+	} else {
+		fmt.Println("result:", result)
+	}
+
+}
+
+// func TestScript() *redis.Script {
+// 	script := redis.NewScript(`local foo = redis.call("ping");return foo`)
+// 	return script
+// }
+
+// func TestScriptDo() {
+// 	rdb := RDBInstance()
+// 	script := TestScript()
+// 	sha, err := script.Load(rdb.Context(), rdb).Result()
+// 	if err != nil {
+// 		fmt.Println("TestScriptDo err=", err)
+// 	}
+// 	ret := rdb.EvalSha(rdb.Context(), sha, []string{})
+// 	if result, err := ret.Result(); err != nil {
+// 		fmt.Printf("Execute Redis fail: %v", err.Error())
+// 	} else {
+// 		fmt.Println("result:", result)
+// 	}
+// }

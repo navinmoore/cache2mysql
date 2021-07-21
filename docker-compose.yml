@@ -13,7 +13,7 @@ services:
       - "${REDIS_DIR}/data:/data"
     command:
       # 执行的命令
-      redis-server
+      redis-server /usr/local/etc/redis/redis.conf 
 
   mysql:
     image: mysql:latest
@@ -26,15 +26,15 @@ services:
       # 环境变量
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-  rabbit1:
-    image: rabbitmq:management
-    hostname: rabbit1
-    ports:
-      - 5672:5672 #集群内部访问的端口
-      - 15672:15672
-    environment: 
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER} 
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+  # rabbit1:
+  #   image: rabbitmq:management
+  #   hostname: rabbit1
+  #   ports:
+  #     - 5672:5672 #集群内部访问的端口
+  #     - 15672:15672
+  #   environment: 
+  #     - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER} 
+  #     - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     
   # rabbit2:
   #   image: rabbitmq:management

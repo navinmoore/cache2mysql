@@ -21,8 +21,8 @@ func CreateGoods() {
 	models.CreateGoods(&goods)
 }
 
-func GetGoodsForMysql() {
-	goods, err := models.GetGoodsByID(1)
+func GetGoodsForMysql(ID uint) {
+	goods, err := models.GetGoodsByID(ID)
 	if err != nil {
 		fmt.Println("goods_service.GetGoods error=", err)
 	}
@@ -30,19 +30,23 @@ func GetGoodsForMysql() {
 
 }
 
-func GetGoodsForRedis() {
-	goods, err := redis.GetGoodsForRedis(1)
+func GetGoodsForRedis(ID uint) {
+	goods, err := redis.GetGoodsForRedis(ID)
 	if err != nil {
 		fmt.Println("goods_service.GetGoods error=", err)
 	}
 	fmt.Printf("%#v", goods)
 }
 
-func DecrGoodsForRedis(num int) {
-	count, err := redis.DecrGoodsStock(1, num)
+func DecrGoodsForRedis(ID uint, num int) int {
+	count, err := redis.DecrGoodsStock(ID, num)
 	if err != nil {
 		fmt.Println("DecrGoodsForRedis: error=", err)
 	}
 	fmt.Println("count:", count)
+	return int(count)
+}
 
+func TestScriptDo() {
+	redis.EvalDecrScript("goods_info_1", 2)
 }

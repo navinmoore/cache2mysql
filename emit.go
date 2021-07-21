@@ -1,6 +1,8 @@
 package main
 
-import "cache2mysql/rabbitMQ"
+import (
+	"cache2mysql/service"
+)
 
 func main() {
 	// db := mysql.MysqlInstance()
@@ -17,6 +19,7 @@ func main() {
 	// r.PublishSimple("hello")
 	// r := rabbitMQ.NewRabbitMQWorkQueue("hello", "amqp://yairs:yairs@127.0.0.1:5672/")
 	// r.Task()
-	r := rabbitMQ.NewRoutingRabbitMQ("", "amqp://yairs:yairs@127.0.0.1:5672/")
-	r.RoutingPub()
+	// r := rabbitMQ.NewRoutingRabbitMQ("", "amqp://yairs:yairs@127.0.0.1:5672/")
+	// r.RoutingPub()
+	service.TestScriptDo()
 }
